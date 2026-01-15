@@ -1,0 +1,66 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - android
+          - ios
+          - all
+      profile:
+        description: 'Build profile'
+        required: true
+        default: 'preview'
+        type: choice
+        options:
+          - development
+          - preview
+          - production
+
+jobs:
+  build:
+    name: EAS Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build (Manual Trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          eas build --platform ${{ inputs.platform }} --profile ${{ inputs.profile }} --non-interactive
+
+      - name: Build Preview (Push to Main)
+        if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')
+        run: |
+          eas build --platform android --profile preview --non-interactive
+
+      - name: Build Production (Tag Release)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          eas build --platform all --profile production --non-interactive
