@@ -1,0 +1,46 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '📱 BSM Mobile - Bebias Shipping Manager'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(cat | jq -r '.tool_input.file_path // empty' 2>/dev/null); case \"$FILE\" in */api/*|*prisma*|*migration*) echo 'Backend is complete. Do not modify API or database files.' >&2; exit 2;; esac; exit 0",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm *)",
+      "Bash(npx expo *)",
+      "Bash(eas *)",
+      "Bash(git *)",
+      "Bash(gh *)",
+      "Read(*)",
+      "Write(src/**)",
+      "Write(app/**)",
+      "Write(components/**)"
+    ],
+    "deny": [
+      "Write(api/**)",
+      "Write(prisma/**)",
+      "Write(**/migration*)"
+    ]
+  }
+}

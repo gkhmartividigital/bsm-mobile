@@ -1,4 +1,7 @@
-import { OrderStatus, ShippingProvider } from '@/constants/config';
+import { OrderStatus, ShippingProvider } from '@/constants/config'
+
+// Re-export for convenience
+export type { OrderStatus, ShippingProvider } from '@/constants/config'
 
 /**
  * Order model matching the backend Prisma schema

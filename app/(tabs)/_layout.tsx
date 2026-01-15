@@ -6,9 +6,8 @@ import { View, Text } from 'react-native';
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   const icons: Record<string, string> = {
     orders: '📦',
-    scan: '📷',
     settings: '⚙️',
-  };
+  }
 
   return (
     <View className="items-center">
@@ -57,13 +56,6 @@ export default function TabsLayout() {
         options={{
           href: null, // Hide from tab bar
           title: 'Order Details',
-        }}
-      />
-      <Tabs.Screen
-        name="scan"
-        options={{
-          title: 'Scan',
-          tabBarIcon: ({ focused }) => <TabIcon name="scan" focused={focused} />,
         }}
       />
       <Tabs.Screen

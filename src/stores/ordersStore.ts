@@ -44,32 +44,34 @@ export const useOrdersStore = create<OrdersStore>((set, get) => ({
   ...initialState,
 
   fetchOrders: async () => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null })
     try {
-      const response = await ordersApi.getOrders();
+      const response = await ordersApi.getOrders()
+      console.log('API Response:', JSON.stringify(response, null, 2))
       set({
-        orders: response.orders,
+        orders: response?.orders ?? [],
         isLoading: false,
         lastSynced: new Date(),
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch orders';
-      set({ isLoading: false, error: errorMessage });
+      })
+    } catch (error: unknown) {
+      console.log('API Error:', error)
+      const err = error as { message?: string; status?: number }
+      set({ isLoading: false, error: err.message ?? 'Failed to fetch orders' })
     }
   },
 
   refreshOrders: async () => {
-    set({ isRefreshing: true, error: null });
+    set({ isRefreshing: true, error: null })
     try {
-      const response = await ordersApi.getOrders();
+      const response = await ordersApi.getOrders()
       set({
-        orders: response.orders,
+        orders: response?.orders ?? [],
         isRefreshing: false,
         lastSynced: new Date(),
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to refresh orders';
-      set({ isRefreshing: false, error: errorMessage });
+      })
+    } catch (error: unknown) {
+      const err = error as { message?: string; status?: number }
+      set({ isRefreshing: false, error: err.message ?? 'Failed to refresh orders' })
     }
   },
 
@@ -190,16 +192,17 @@ export const useOrdersStore = create<OrdersStore>((set, get) => ({
   clearError: () => set({ error: null }),
 
   getOrdersByStatus: (status: OrderStatus) => {
-    return get().orders.filter(order => order.status === status);
+    const orders = get().orders ?? []
+    return orders.filter(order => order.status === status)
   },
 
   getOrderCounts: () => {
-    const orders = get().orders;
+    const orders = get().orders ?? []
     return {
       pending: orders.filter(o => o.status === 'PENDING').length,
       ready: orders.filter(o => o.status === 'READY').length,
       shipped: orders.filter(o => o.status === 'SHIPPED').length,
       total: orders.length,
-    };
+    }
   },
 }));

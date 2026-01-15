@@ -12,7 +12,7 @@ interface OrderListProps {
 }
 
 export function OrderList({
-  orders,
+  orders = [],
   refreshing,
   onRefresh,
   ListHeaderComponent,

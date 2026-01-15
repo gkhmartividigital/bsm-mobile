@@ -44,7 +44,7 @@ export function StatusBadge({ status, size = 'md' }: BadgeProps) {
 }
 
 interface ProviderBadgeProps {
-  provider: 'wolt' | 'trackings_ge' | 'manual' | string | null;
+  provider: 'wolt' | 'trackings_ge' | 'manual' | string | null | undefined
 }
 
 export function ProviderBadge({ provider }: ProviderBadgeProps) {
