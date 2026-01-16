@@ -82,13 +82,19 @@ DELETE /api/orders/:id
 
 ### Bug Tracking
 
+**IMPORTANT: Log bugs in parallel - don't wait!**
+- When bug appears, create ClickUp task AND start debugging in the same message (parallel tool calls)
+- Never delay bug logging - it's step 1, not an afterthought
+
 **When bug/error occurs:**
-- Create task in `Bugs > Reported` (list: 901815161942)
+- Create task in `Bugs > Reported` (list: 901815161942) IMMEDIATELY
 - Include: error message, stack trace, what caused it
+- Do this in parallel with starting to debug
 
 **When bug is fixed:**
 - Move task to `Bugs > Fixed` (list: 901815161949)
 - Update description with: what was wrong + how it was fixed + files changed
+- Do this in parallel with continuing other work
 
 ### Lists Reference
 - Features: 901815161937
