@@ -14,7 +14,7 @@ Mobile app for Bebias Shipping Manager - iOS & Android using Expo.
 - 🚧 Mobile app - IN PROGRESS
 
 ## Tech Stack
-- Expo SDK 52+
+- Expo SDK 54
 - React Native + TypeScript
 - Expo Router
 - NativeWind (TailwindCSS)
@@ -72,13 +72,20 @@ DELETE /api/orders/:id
 ## ClickUp Integration
 **Workspace ID**: 90182241209
 
-### Task Status Flow (update automatically)
-| Status | When |
-|--------|------|
+**⚠️ CRITICAL: Always update ClickUp task status immediately when:**
+- Starting work on a task → set to `In progress`
+- Code is done and committed → set to `Ready for review`
+- User says "it works", "good", "done", or confirms success → set to `Completed`
+
+**DO NOT wait for user to remind you. Update status the moment the trigger happens.**
+
+### Task Status Flow
+| Status | Trigger |
+|--------|---------|
 | `To do` | Task not started |
-| `In progress` | Started working on task |
-| `Ready for review` | Code done, needs user testing |
-| `Completed` | User confirmed it works |
+| `In progress` | You start working on a task |
+| `Ready for review` | Code committed, awaiting user test |
+| `Completed` | User confirms it works (any positive confirmation) |
 
 ### Bug Tracking
 
