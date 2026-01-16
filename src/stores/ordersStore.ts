@@ -25,7 +25,7 @@ interface OrdersActions {
   setSelectedOrder: (order: Order | null) => void;
   clearError: () => void;
   getOrdersByStatus: (status: OrderStatus) => Order[];
-  getOrderCounts: () => { pending: number; ready: number; shipped: number; total: number };
+  getOrderCounts: () => { pending: number; ready: number; shipped: number; delivered: number; total: number };
 }
 
 type OrdersStore = OrdersState & OrdersActions;
@@ -202,6 +202,7 @@ export const useOrdersStore = create<OrdersStore>((set, get) => ({
       pending: orders.filter(o => o.status === 'PENDING').length,
       ready: orders.filter(o => o.status === 'READY').length,
       shipped: orders.filter(o => o.status === 'SHIPPED').length,
+      delivered: orders.filter(o => o.status === 'DELIVERED').length,
       total: orders.length,
     }
   },

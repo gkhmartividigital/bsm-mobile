@@ -17,8 +17,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.bebias.shippingmanager",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "We need your location to show nearby deliveries and confirm addresses.",
-        "NSCameraUsageDescription": "We need camera access to scan barcodes and take delivery photos."
+        "NSLocationWhenInUseUsageDescription": "We need your location to show nearby deliveries and confirm addresses."
       }
     },
     "android": {
@@ -31,7 +30,6 @@
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
-        "CAMERA",
         "VIBRATE",
         "RECEIVE_BOOT_COMPLETED"
       ],
@@ -49,7 +47,6 @@
       "expo-router",
       "expo-secure-store",
       "expo-location",
-      "expo-camera",
       "expo-notifications"
     ],
     "experiments": {

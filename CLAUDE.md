@@ -68,3 +68,31 @@ DELETE /api/orders/:id
 
 ## Preferences
 - Run debugger agent in background (user continues working while debugging)
+
+## ClickUp Integration
+**Workspace ID**: 90182241209
+
+### Task Status Flow (update automatically)
+| Status | When |
+|--------|------|
+| `To do` | Task not started |
+| `In progress` | Started working on task |
+| `Ready for review` | Code done, needs user testing |
+| `Completed` | User confirmed it works |
+
+### Bug Tracking
+
+**When bug/error occurs:**
+- Create task in `Bugs > Reported` (list: 901815161942)
+- Include: error message, stack trace, what caused it
+
+**When bug is fixed:**
+- Move task to `Bugs > Fixed` (list: 901815161949)
+- Update description with: what was wrong + how it was fixed + files changed
+
+### Lists Reference
+- Features: 901815161937
+- Sprint: 901815161930
+- Backlog: 901815161922
+- Bugs/Reported: 901815161942
+- Bugs/Fixed: 901815161949
