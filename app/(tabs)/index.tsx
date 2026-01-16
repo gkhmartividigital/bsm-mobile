@@ -1,12 +1,78 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react'
-import { View, Text, Alert } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import React, { useState, useMemo, useCallback } from 'react'
+import {
+  View,
+  Text,
+  FlatList,
+  RefreshControl,
+  TouchableOpacity,
+  ActivityIndicator,
+  Pressable,
+  Platform,
+  Vibration,
+} from 'react-native'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import Animated, { FadeIn, FadeOut, Layout } from 'react-native-reanimated'
 import { useOrders } from '@/hooks'
-import { OrderList, OrderStatusTabs } from '@/components/orders'
-import { Button } from '@/components/ui'
+import { OrderCard } from '@/components/orders/OrderCard'
+import { OrderStatusTabs } from '@/components/orders/OrderStatusTabs'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { Order } from '@/types'
 import { OrderStatus } from '@/constants'
 
+type TabFilter = 'all' | OrderStatus
+
+// Simple haptic feedback using Vibration API (works without expo-haptics)
+const hapticFeedback = {
+  light: () => {
+    if (Platform.OS === 'ios') {
+      // iOS has built-in haptic support via selection feedback
+      Vibration.vibrate(10)
+    } else {
+      Vibration.vibrate(10)
+    }
+  },
+  medium: () => {
+    Vibration.vibrate(20)
+  },
+  success: () => {
+    Vibration.vibrate([0, 30, 50, 30])
+  },
+  error: () => {
+    Vibration.vibrate([0, 50, 50, 50])
+  },
+}
+
+const EMPTY_STATE_CONFIG: Record<TabFilter, { title: string; description: string }> = {
+  all: {
+    title: 'No orders yet',
+    description: 'Orders will appear here once they are created',
+  },
+  PENDING: {
+    title: 'No pending orders',
+    description: 'All orders have been processed',
+  },
+  READY: {
+    title: 'No orders ready',
+    description: 'No orders are ready for shipping',
+  },
+  SHIPPED: {
+    title: 'No shipped orders',
+    description: 'No orders are currently in transit',
+  },
+  DELIVERED: {
+    title: 'No delivered orders',
+    description: 'Delivered orders will appear here',
+  },
+  CANCELLED: {
+    title: 'No cancelled orders',
+    description: 'No orders have been cancelled',
+  },
+}
+
 export default function OrdersScreen() {
+  const insets = useSafeAreaInsets()
+
   const {
     orders,
     isLoading,
@@ -19,8 +85,7 @@ export default function OrdersScreen() {
     clearError,
   } = useOrders()
 
-  const [activeTab, setActiveTab] = useState<'all' | OrderStatus>('all')
-  const lastErrorRef = useRef<string | null>(null)
+  const [activeTab, setActiveTab] = useState<TabFilter>('all')
 
   // Filter orders based on active tab
   const filteredOrders = useMemo(() => {
@@ -29,59 +94,202 @@ export default function OrdersScreen() {
     return orderList.filter(order => order.status === activeTab)
   }, [orders, activeTab])
 
-  // Handle sync
-  const handleSync = async () => {
+  // Handle tab change with haptic feedback
+  const handleTabChange = useCallback((tab: TabFilter) => {
+    hapticFeedback.light()
+    setActiveTab(tab)
+  }, [])
+
+  // Handle refresh with haptic feedback
+  const handleRefresh = useCallback(async () => {
+    hapticFeedback.light()
+    await refresh()
+  }, [refresh])
+
+  // Handle sync with haptic feedback
+  const handleSync = useCallback(async () => {
+    hapticFeedback.medium()
     try {
       await sync()
-      Alert.alert('Success', 'Orders synced successfully')
+      hapticFeedback.success()
     } catch {
-      Alert.alert('Error', 'Failed to sync orders')
+      hapticFeedback.error()
     }
+  }, [sync])
+
+  // Handle retry
+  const handleRetry = useCallback(() => {
+    hapticFeedback.medium()
+    clearError()
+    refresh()
+  }, [clearError, refresh])
+
+  // Render order card - OrderCard already handles navigation internally
+  const renderOrderCard = useCallback(({ item }: { item: Order }) => (
+    <Animated.View
+      entering={FadeIn.duration(300)}
+      exiting={FadeOut.duration(200)}
+      layout={Layout.springify()}
+    >
+      <OrderCard order={item} />
+    </Animated.View>
+  ), [])
+
+  // Key extractor
+  const keyExtractor = useCallback((item: Order) => item.id.toString(), [])
+
+  // Empty state config for current tab
+  const emptyConfig = EMPTY_STATE_CONFIG[activeTab] || EMPTY_STATE_CONFIG.all
+
+  // Loading state
+  if (isLoading && !orders?.length) {
+    return <LoadingScreen message="Loading orders..." />
   }
 
-  // Show error alert only once per unique error
-  useEffect(() => {
-    if (error && error !== lastErrorRef.current) {
-      lastErrorRef.current = error
-      Alert.alert('Error', error, [{ text: 'OK', onPress: clearError }])
-    } else if (!error) {
-      lastErrorRef.current = null
-    }
-  }, [error, clearError])
-
-  const HeaderComponent = (
-    <View className="mb-4">
-      {/* Sync Button */}
-      <View className="mb-4 flex-row items-center justify-between">
-        <Text className="text-sm text-gray-500">
-          {counts.total} active orders
-        </Text>
-        <Button
-          title={isSyncing ? 'Syncing...' : 'Sync'}
-          variant="outline"
-          size="sm"
-          onPress={handleSync}
-          loading={isSyncing}
+  // Error state
+  if (error && !orders?.length) {
+    return (
+      <SafeAreaView edges={['bottom']} className="flex-1 bg-gray-50">
+        <Header
+          title="Orders"
+          subtitle={`${counts.total} active orders`}
+          isSyncing={isSyncing}
+          onSync={handleSync}
         />
-      </View>
-
-      {/* Status Tabs */}
-      <OrderStatusTabs
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        counts={counts}
-      />
-    </View>
-  );
+        <View className="flex-1 items-center justify-center p-8">
+          <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-red-100">
+            <Text className="text-4xl">!</Text>
+          </View>
+          <Text className="mb-2 text-center text-xl font-semibold text-gray-800">
+            Something went wrong
+          </Text>
+          <Text className="mb-6 text-center text-gray-500">{error}</Text>
+          <TouchableOpacity
+            onPress={handleRetry}
+            className="rounded-xl bg-sky-500 px-6 py-3"
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading orders"
+          >
+            <Text className="font-semibold text-white">Try Again</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    )
+  }
 
   return (
     <SafeAreaView edges={['bottom']} className="flex-1 bg-gray-50">
-      <OrderList
-        orders={filteredOrders}
-        refreshing={isRefreshing}
-        onRefresh={refresh}
-        ListHeaderComponent={HeaderComponent}
+      <FlatList
+        data={filteredOrders}
+        keyExtractor={keyExtractor}
+        renderItem={renderOrderCard}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingBottom: insets.bottom + 16,
+          flexGrow: filteredOrders.length === 0 ? 1 : undefined,
+        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={['#0ea5e9']}
+            tintColor="#0ea5e9"
+            progressBackgroundColor="#ffffff"
+          />
+        }
+        ListHeaderComponent={
+          <View className="mb-4">
+            {/* Sync Button Row */}
+            <View className="mb-4 flex-row items-center justify-between">
+              <Text className="text-sm text-gray-500">
+                {counts.total} active orders
+              </Text>
+              <TouchableOpacity
+                onPress={handleSync}
+                disabled={isSyncing}
+                className={`flex-row items-center rounded-lg border border-sky-500 px-3 py-2 ${
+                  isSyncing ? 'opacity-50' : ''
+                }`}
+                accessibilityRole="button"
+                accessibilityLabel="Sync orders"
+              >
+                {isSyncing ? (
+                  <ActivityIndicator size="small" color="#0ea5e9" />
+                ) : (
+                  <Text className="font-semibold text-sky-500">Sync</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* Status Tabs */}
+            <OrderStatusTabs
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              counts={counts}
+            />
+          </View>
+        }
+        ListEmptyComponent={
+          <Animated.View
+            entering={FadeIn.delay(200)}
+            className="flex-1 items-center justify-center py-16"
+          >
+            <EmptyState
+              title={emptyConfig.title}
+              description={emptyConfig.description}
+              action={
+                <TouchableOpacity
+                  onPress={handleRefresh}
+                  className="mt-4 rounded-xl bg-sky-500 px-6 py-3"
+                  accessibilityRole="button"
+                  accessibilityLabel="Refresh orders"
+                >
+                  <Text className="font-semibold text-white">Refresh</Text>
+                </TouchableOpacity>
+              }
+            />
+          </Animated.View>
+        }
+        showsVerticalScrollIndicator={false}
+        removeClippedSubviews
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        initialNumToRender={10}
       />
     </SafeAreaView>
-  );
+  )
+}
+
+// Header component (used only in error state since main header is in _layout.tsx)
+interface HeaderProps {
+  title: string
+  subtitle: string
+  isSyncing: boolean
+  onSync: () => void
+}
+
+function Header({ title, subtitle, isSyncing, onSync }: HeaderProps) {
+  return (
+    <View className="bg-[#1a1a2e] px-4 pb-4 pt-2">
+      <View className="flex-row items-center justify-between">
+        <View>
+          <Text className="text-2xl font-bold text-white">{title}</Text>
+          <Text className="text-sm text-gray-400">{subtitle}</Text>
+        </View>
+        <Pressable
+          onPress={onSync}
+          disabled={isSyncing}
+          className={`rounded-lg bg-white/10 px-4 py-2 ${isSyncing ? 'opacity-50' : ''}`}
+          accessibilityRole="button"
+          accessibilityLabel="Sync orders"
+        >
+          {isSyncing ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <Text className="font-medium text-white">Sync</Text>
+          )}
+        </Pressable>
+      </View>
+    </View>
+  )
 }

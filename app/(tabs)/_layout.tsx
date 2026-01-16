@@ -1,9 +1,29 @@
-import React from 'react';
-import { Tabs } from 'expo-router';
-import { View, Text } from 'react-native';
+import React from 'react'
+import { Tabs } from 'expo-router'
+import { View, Text, Image } from 'react-native'
 
-// Simple icon components (you can replace with expo/vector-icons)
+// Wolt icon image
+const woltIcon = require('../../assets/icons/wolt-icon.png')
+
+// Tab icon component
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
+  // Use image for Wolt, emoji for others
+  if (name === 'wolt') {
+    return (
+      <View className="items-center">
+        <Image
+          source={woltIcon}
+          style={{
+            width: 28,
+            height: 28,
+            opacity: focused ? 1 : 0.5,
+          }}
+          resizeMode="contain"
+        />
+      </View>
+    )
+  }
+
   const icons: Record<string, string> = {
     orders: '📦',
     settings: '⚙️',
@@ -11,9 +31,11 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
 
   return (
     <View className="items-center">
-      <Text style={{ fontSize: 24 }}>{icons[name] || '📦'}</Text>
+      <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.6 }}>
+        {icons[name] || '📦'}
+      </Text>
     </View>
-  );
+  )
 }
 
 export default function TabsLayout() {
@@ -52,6 +74,14 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="wolt"
+        options={{
+          title: 'Wolt',
+          headerTitle: 'Wolt Preorders',
+          tabBarIcon: ({ focused }) => <TabIcon name="wolt" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
         name="orders/[id]"
         options={{
           href: null, // Hide from tab bar
@@ -62,9 +92,10 @@ export default function TabsLayout() {
         name="settings"
         options={{
           title: 'Settings',
+          headerTitle: 'Settings',
           tabBarIcon: ({ focused }) => <TabIcon name="settings" focused={focused} />,
         }}
       />
     </Tabs>
-  );
+  )
 }

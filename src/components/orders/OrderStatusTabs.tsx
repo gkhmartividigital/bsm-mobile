@@ -15,6 +15,7 @@ interface OrderStatusTabsProps {
     pending: number;
     ready: number;
     shipped: number;
+    delivered: number;
     total: number;
   };
 }
@@ -29,6 +30,7 @@ export function OrderStatusTabs({
     { key: 'PENDING', label: 'Pending', count: counts.pending },
     { key: 'READY', label: 'Ready', count: counts.ready },
     { key: 'SHIPPED', label: 'Shipped', count: counts.shipped },
+    { key: 'DELIVERED', label: 'Delivered', count: counts.delivered },
   ];
 
   return (
@@ -36,7 +38,6 @@ export function OrderStatusTabs({
       horizontal
       showsHorizontalScrollIndicator={false}
       className="mb-4"
-      contentContainerStyle={{ paddingHorizontal: 16 }}
     >
       {tabs.map(tab => {
         const isActive = activeTab === tab.key;
