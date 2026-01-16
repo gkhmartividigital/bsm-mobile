@@ -20,19 +20,26 @@ export const ordersApi = {
   /**
    * Get single order by ID
    */
-  getOrder: (id: number) => apiRequest<Order>(apiClient.get(`/api/orders/${id}`)),
+  getOrder: async (id: number): Promise<Order> => {
+    const response = await apiRequest<OrderResponse>(apiClient.get(`/api/orders/${id}`))
+    return response.order
+  },
 
   /**
    * Create a new order
    */
-  createOrder: (payload: CreateOrderPayload) =>
-    apiRequest<Order>(apiClient.post('/api/orders', payload)),
+  createOrder: async (payload: CreateOrderPayload): Promise<Order> => {
+    const response = await apiRequest<OrderResponse>(apiClient.post('/api/orders', payload))
+    return response.order
+  },
 
   /**
    * Update an existing order
    */
-  updateOrder: (id: number, payload: UpdateOrderPayload) =>
-    apiRequest<Order>(apiClient.patch(`/api/orders/${id}`, payload)),
+  updateOrder: async (id: number, payload: UpdateOrderPayload): Promise<Order> => {
+    const response = await apiRequest<OrderResponse>(apiClient.patch(`/api/orders/${id}`, payload))
+    return response.order
+  },
 
   /**
    * Delete an order
