@@ -59,6 +59,13 @@ DELETE /api/orders/:id
 - `eas build --platform ios --profile preview` - TestFlight
 - `eas build --platform android --profile preview` - APK
 
+## CI Checks (Run Before Pushing!)
+**⚠️ ALWAYS run these before pushing to remote:**
+```bash
+npm run typecheck && npm run lint && npm test -- --passWithNoTests
+```
+If any check fails, fix it before committing.
+
 ## Rules
 - ❌ Don't modify backend/API
 - ❌ Don't modify Prisma schema
