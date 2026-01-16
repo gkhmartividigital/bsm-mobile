@@ -186,7 +186,6 @@ export function MapViewWrapper({
               rotateEnabled={false}
               pitchEnabled={false}
               onMapReady={handleMapReady}
-              onError={handleMapError}
             >
               <Marker
                 coordinate={{ latitude, longitude }}

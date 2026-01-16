@@ -15,6 +15,7 @@ export interface Order {
   city: string;
   productName: string;
   quantity: number;
+  notes?: string | null;
 
   // Status
   status: OrderStatus;
