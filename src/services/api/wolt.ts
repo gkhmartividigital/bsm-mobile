@@ -1,5 +1,10 @@
-import { apiClient, apiRequest } from './client';
-import { WoltEstimatePayload, WoltEstimateResponse } from '@/types';
+import { apiClient, apiRequest } from './client'
+import {
+  WoltEstimatePayload,
+  WoltEstimateResponse,
+  WoltPreordersResponse,
+  WoltConfirmResponse,
+} from '@/types'
 
 /**
  * Wolt API endpoints
@@ -32,4 +37,20 @@ export const woltApi = {
     apiRequest<{ success: boolean }>(
       apiClient.post('/api/wolt/settings', { woltNowEnabled: enabled })
     ),
-};
+
+  /**
+   * Get Wolt preorders
+   */
+  getPreorders: (status?: string) =>
+    apiRequest<WoltPreordersResponse>(
+      apiClient.get('/api/wolt/preorder', { params: status ? { status } : undefined })
+    ),
+
+  /**
+   * Confirm a preorder and send to Wolt
+   */
+  confirmPreorder: (id: number) =>
+    apiRequest<WoltConfirmResponse>(
+      apiClient.post(`/api/wolt/preorder/${id}/confirm`)
+    ),
+}
