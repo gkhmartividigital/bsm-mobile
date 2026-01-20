@@ -89,6 +89,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="orders/edit"
+        options={{
+          href: null, // Hide from tab bar
+          title: 'Edit Order',
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',

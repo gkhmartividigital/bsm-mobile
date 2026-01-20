@@ -62,6 +62,7 @@ export interface CreateOrderPayload {
   city?: string;
   productName: string;
   quantity?: number;
+  notes?: string;
 }
 
 /**
@@ -75,6 +76,7 @@ export interface UpdateOrderPayload {
   city?: string;
   productName?: string;
   quantity?: number;
+  notes?: string;
   sendToShipping?: boolean;
   senderKey?: string;
 }

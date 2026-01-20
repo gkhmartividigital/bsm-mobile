@@ -1,5 +1,6 @@
 export { Button } from './Button'
 export { Input } from './Input'
+export { SearchInput } from './SearchInput'
 export { Card } from './Card'
 export { StatusBadge, ProviderBadge } from './Badge'
 export { LoadingScreen } from './LoadingScreen'

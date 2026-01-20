@@ -9,7 +9,7 @@ import {
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
-  variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'success';
+  variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'success' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   icon?: React.ReactNode;
@@ -35,6 +35,7 @@ export function Button({
     outline: 'bg-transparent border-2 border-primary-600',
     danger: 'bg-red-600 active:bg-red-700',
     success: 'bg-green-600 active:bg-green-700',
+    ghost: 'bg-transparent active:bg-white/10',
   };
 
   const sizeStyles = {
@@ -49,6 +50,7 @@ export function Button({
     outline: 'text-primary-600',
     danger: 'text-white',
     success: 'text-white',
+    ghost: 'text-white',
   };
 
   const textSizeStyles = {
@@ -70,7 +72,7 @@ export function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'outline' ? '#0284c7' : '#ffffff'}
+          color={variant === 'outline' ? '#0284c7' : variant === 'ghost' ? '#ffffff' : '#ffffff'}
           size="small"
         />
       ) : (
