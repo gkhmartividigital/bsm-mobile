@@ -3,8 +3,25 @@ import { Tabs } from 'expo-router'
 import { View, Text, Image } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-// Wolt icon image
+// Icons
 const woltIcon = require('../../assets/icons/wolt-icon.png')
+const logo = require('../../assets/icon.png')
+
+// Header title with logo
+function HeaderLogo() {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <Image
+        source={logo}
+        style={{ width: 32, height: 32, borderRadius: 6, marginRight: 8 }}
+        resizeMode="contain"
+      />
+      <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: 'bold' }}>
+        BEBIAS
+      </Text>
+    </View>
+  )
+}
 
 // Tab icon component
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
@@ -41,7 +58,6 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets()
-  const tabBarHeight = 70 + insets.bottom
 
   return (
     <Tabs
@@ -52,13 +68,19 @@ export default function TabsLayout() {
           backgroundColor: '#ffffff',
           borderTopWidth: 1,
           borderTopColor: '#e5e7eb',
-          paddingTop: 8,
-          paddingBottom: 8 + insets.bottom,
-          height: tabBarHeight,
+          height: 56 + insets.bottom,
+          paddingBottom: insets.bottom,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 4,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: '600',
+          marginBottom: 2,
+        },
+        tabBarIconStyle: {
+          marginTop: 4,
         },
         headerStyle: {
           backgroundColor: '#1a1a2e',
@@ -73,7 +95,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Orders',
-          headerTitle: 'BEBIAS',
+          headerTitle: () => <HeaderLogo />,
           tabBarIcon: ({ focused }) => <TabIcon name="orders" focused={focused} />,
         }}
       />

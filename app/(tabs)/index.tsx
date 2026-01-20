@@ -11,7 +11,6 @@ import {
   Vibration,
   Keyboard,
 } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Animated, { FadeIn } from 'react-native-reanimated'
 import { useOrders } from '@/hooks'
 import { OrderCard } from '@/components/orders/OrderCard'
@@ -73,8 +72,6 @@ const EMPTY_STATE_CONFIG: Record<TabFilter, { title: string; description: string
 }
 
 export default function OrdersScreen() {
-  const insets = useSafeAreaInsets()
-
   const {
     orders,
     isLoading,
@@ -187,7 +184,7 @@ export default function OrdersScreen() {
   // Error state
   if (error && !orders?.length) {
     return (
-      <SafeAreaView edges={['bottom']} className="flex-1 bg-gray-50">
+      <View className="flex-1 bg-gray-50">
         <Header
           title="Orders"
           subtitle={`${counts.total} active orders`}
@@ -211,19 +208,20 @@ export default function OrdersScreen() {
             <Text className="font-semibold text-white">Try Again</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     )
   }
 
   return (
-    <SafeAreaView edges={['bottom']} className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-50">
       <FlatList
         data={filteredOrders}
         keyExtractor={keyExtractor}
         renderItem={renderOrderCard}
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingBottom: insets.bottom + 16,
+          paddingTop: 16,
+          paddingBottom: 16,
           flexGrow: filteredOrders.length === 0 ? 1 : undefined,
         }}
         refreshControl={
@@ -325,7 +323,7 @@ export default function OrdersScreen() {
         initialNumToRender={10}
       />
 
-    </SafeAreaView>
+    </View>
   )
 }
 
