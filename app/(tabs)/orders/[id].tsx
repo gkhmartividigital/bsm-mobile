@@ -142,6 +142,16 @@ export default function OrderDetailScreen() {
           title: `Order #${order.externalId || order.id}`,
           headerStyle: { backgroundColor: '#1a1a2e' },
           headerTintColor: '#ffffff',
+          headerRight: () => (
+            <Button
+              title="Edit"
+              variant="ghost"
+              size="sm"
+              onPress={() => router.push(`/orders/edit?id=${order.id}`)}
+              icon={<Ionicons name="create-outline" size={18} color="#ffffff" />}
+              className="mr-2"
+            />
+          ),
         }}
       />
       <SafeAreaView edges={['bottom']} className="flex-1 bg-gray-50">

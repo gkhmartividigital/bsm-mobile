@@ -9,6 +9,7 @@ import {
   Pressable,
   Platform,
   Vibration,
+  Keyboard,
 } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Animated, { FadeIn, FadeOut, Layout } from 'react-native-reanimated'
@@ -17,6 +18,7 @@ import { OrderCard } from '@/components/orders/OrderCard'
 import { OrderStatusTabs } from '@/components/orders/OrderStatusTabs'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { SearchInput } from '@/components/ui/SearchInput'
 import { Order } from '@/types'
 import { OrderStatus } from '@/constants'
 
@@ -86,13 +88,43 @@ export default function OrdersScreen() {
   } = useOrders()
 
   const [activeTab, setActiveTab] = useState<TabFilter>('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('')
 
-  // Filter orders based on active tab
+  // Filter orders based on active tab and search query
   const filteredOrders = useMemo(() => {
     const orderList = orders ?? []
-    if (activeTab === 'all') return orderList
-    return orderList.filter(order => order.status === activeTab)
-  }, [orders, activeTab])
+
+    // First filter by status tab
+    let result = activeTab === 'all'
+      ? orderList
+      : orderList.filter(order => order.status === activeTab)
+
+    // Then filter by search query
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase().trim()
+      result = result.filter(order => {
+        const searchableFields = [
+          order.customerName,
+          order.customerPhone,
+          order.customerAddress,
+          order.productName,
+          order.externalId,
+          order.trackingCode,
+        ]
+        return searchableFields.some(field =>
+          field?.toLowerCase().includes(query)
+        )
+      })
+    }
+
+    return result
+  }, [orders, activeTab, debouncedSearchQuery])
+
+  // Handle debounced search change
+  const handleDebouncedSearchChange = useCallback((query: string) => {
+    setDebouncedSearchQuery(query)
+  }, [])
 
   // Handle tab change with haptic feedback
   const handleTabChange = useCallback((tab: TabFilter) => {
@@ -138,8 +170,20 @@ export default function OrdersScreen() {
   // Key extractor
   const keyExtractor = useCallback((item: Order) => item.id.toString(), [])
 
-  // Empty state config for current tab
-  const emptyConfig = EMPTY_STATE_CONFIG[activeTab] || EMPTY_STATE_CONFIG.all
+  // Empty state config for current tab or search
+  const emptyConfig = useMemo(() => {
+    if (debouncedSearchQuery.trim()) {
+      return {
+        title: 'No results found',
+        description: `No orders match "${debouncedSearchQuery}"`,
+        isSearch: true,
+      }
+    }
+    return {
+      ...(EMPTY_STATE_CONFIG[activeTab] || EMPTY_STATE_CONFIG.all),
+      isSearch: false,
+    }
+  }, [activeTab, debouncedSearchQuery])
 
   // Loading state
   if (isLoading && !orders?.length) {
@@ -199,10 +243,23 @@ export default function OrdersScreen() {
         }
         ListHeaderComponent={
           <View className="mb-4">
+            {/* Search Bar */}
+            <View className="mb-3">
+              <SearchInput
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onDebouncedChange={handleDebouncedSearchChange}
+                debounceMs={300}
+                placeholder="Search orders..."
+              />
+            </View>
+
             {/* Sync Button Row */}
             <View className="mb-4 flex-row items-center justify-between">
               <Text className="text-sm text-gray-500">
-                {counts.total} active orders
+                {debouncedSearchQuery.trim()
+                  ? `${filteredOrders.length} result${filteredOrders.length !== 1 ? 's' : ''}`
+                  : `${counts.total} active orders`}
               </Text>
               <TouchableOpacity
                 onPress={handleSync}
@@ -238,24 +295,42 @@ export default function OrdersScreen() {
               title={emptyConfig.title}
               description={emptyConfig.description}
               action={
-                <TouchableOpacity
-                  onPress={handleRefresh}
-                  className="mt-4 rounded-xl bg-sky-500 px-6 py-3"
-                  accessibilityRole="button"
-                  accessibilityLabel="Refresh orders"
-                >
-                  <Text className="font-semibold text-white">Refresh</Text>
-                </TouchableOpacity>
+                emptyConfig.isSearch ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSearchQuery('')
+                      setDebouncedSearchQuery('')
+                    }}
+                    className="mt-4 rounded-xl bg-sky-500 px-6 py-3"
+                    accessibilityRole="button"
+                    accessibilityLabel="Clear search"
+                  >
+                    <Text className="font-semibold text-white">Clear Search</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    onPress={handleRefresh}
+                    className="mt-4 rounded-xl bg-sky-500 px-6 py-3"
+                    accessibilityRole="button"
+                    accessibilityLabel="Refresh orders"
+                  >
+                    <Text className="font-semibold text-white">Refresh</Text>
+                  </TouchableOpacity>
+                )
               }
             />
           </Animated.View>
         }
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        onScrollBeginDrag={Keyboard.dismiss}
         removeClippedSubviews
         maxToRenderPerBatch={10}
         windowSize={10}
         initialNumToRender={10}
       />
+
     </SafeAreaView>
   )
 }
