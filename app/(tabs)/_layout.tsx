@@ -69,7 +69,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Orders',
-          headerTitle: 'Shipping Manager',
+          headerTitle: 'BEBIAS',
           tabBarIcon: ({ focused }) => <TabIcon name="orders" focused={focused} />,
         }}
       />

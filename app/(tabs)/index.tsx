@@ -12,7 +12,7 @@ import {
   Keyboard,
 } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import Animated, { FadeIn, FadeOut, Layout } from 'react-native-reanimated'
+import Animated, { FadeIn } from 'react-native-reanimated'
 import { useOrders } from '@/hooks'
 import { OrderCard } from '@/components/orders/OrderCard'
 import { OrderStatusTabs } from '@/components/orders/OrderStatusTabs'
@@ -158,13 +158,7 @@ export default function OrdersScreen() {
 
   // Render order card - OrderCard already handles navigation internally
   const renderOrderCard = useCallback(({ item }: { item: Order }) => (
-    <Animated.View
-      entering={FadeIn.duration(300)}
-      exiting={FadeOut.duration(200)}
-      layout={Layout.springify()}
-    >
-      <OrderCard order={item} />
-    </Animated.View>
+    <OrderCard order={item} />
   ), [])
 
   // Key extractor
