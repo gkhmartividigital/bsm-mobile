@@ -1,5 +1,4 @@
 import { format, formatDistanceToNow, parseISO, isValid } from 'date-fns';
-import { ka } from 'date-fns/locale';
 
 /**
  * Format date string to readable format

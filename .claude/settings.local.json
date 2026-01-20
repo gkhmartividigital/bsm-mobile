@@ -1,3 +1,30 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npx eas init)",
+      "Bash(node -e \"const {execSync} = require\\(''child_process''\\); console.log\\(execSync\\(''npx eas init'', {encoding: ''utf8'', stdio: ''pipe''}\\)\\);\")",
+      "Bash(node -e \"const {execSync} = require\\(''child_process''\\); console.log\\(execSync\\(''eas init'', {encoding: ''utf8'', stdio: ''pipe''}\\)\\);\")",
+      "Bash(node -e \"const {execSync} = require\\(''child_process''\\); console.log\\(execSync\\(''eas init --help'', {encoding: ''utf8'', stdio: ''pipe''}\\)\\);\")",
+      "Bash(node -e \"const {execSync} = require\\(''child_process''\\); console.log\\(execSync\\(''eas build:list --limit 1 --json --non-interactive'', {encoding: ''utf8'', stdio: ''pipe''}\\)\\);\")",
+      "WebFetch(domain:job-logs.eascdn.net)",
+      "Bash(node -e \"const {execSync} = require\\(''child_process''\\); console.log\\(execSync\\(''npm install'', {encoding: ''utf8'', stdio: ''pipe''}\\)\\);\")",
+      "mcp__clickup__clickup_search",
+      "Bash(cat:*)",
+      "Bash(echo:*)",
+      "Bash(npx npm-view:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(cmd /c \"npm info react-native@0.81.5\")",
+      "WebFetch(domain:github.com)",
+      "Bash(cmd /c \"npm ls react 2>&1\")",
+      "Bash(node \"/c/Program Files/nodejs/node_modules/npm/bin/npm-cli.js\" install)",
+      "Bash(node:*)",
+      "mcp__clickup__clickup_update_task",
+      "mcp__clickup__clickup_create_task",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nchore: sync package-lock.json with @expo/vector-icons\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "mcp__clickup__clickup_get_task",
+      "Bash(npx jest --ci --no-cache)",
+      "Bash(npx jest:*)"
+    ]
+  },
   "enableAllProjectMcpServers": true
 }

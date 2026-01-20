@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState } from 'react'
 import { View, Text, Pressable, Platform, Linking, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 
@@ -103,14 +103,10 @@ export function MapViewWrapper({
     Linking.openURL(url || `https://www.google.com/maps?q=${latitude},${longitude}`)
   }, [latitude, longitude])
 
-  const handleMapReady = useCallback(() => {
+  const handleMapReady = () => {
     setIsLoading(false)
-  }, [])
+  }
 
-  const handleMapError = useCallback(() => {
-    setHasLoadError(true)
-    setIsLoading(false)
-  }, [])
 
   // Show fallback if there was an error loading the map
   if (hasLoadError) {

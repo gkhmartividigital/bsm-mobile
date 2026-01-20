@@ -23,7 +23,7 @@ export function useWoltPreorders() {
   // Fetch preorders on mount
   useEffect(() => {
     fetchPreorders()
-  }, [])
+  }, [fetchPreorders])
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
@@ -32,7 +32,7 @@ export function useWoltPreorders() {
     }, 30000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [refreshPreorders])
 
   const handleRefresh = useCallback(async () => {
     await refreshPreorders()

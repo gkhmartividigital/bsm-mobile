@@ -34,7 +34,7 @@ export function useProtectedRoute() {
   useEffect(() => {
     // Check session on mount
     checkSession();
-  }, []);
+  }, [checkSession]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -48,7 +48,7 @@ export function useProtectedRoute() {
       // Redirect to main app if authenticated and in auth group
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, isLoading, segments]);
+  }, [isAuthenticated, isLoading, segments, router]);
 
   return { isLoading, isAuthenticated };
 }

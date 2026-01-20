@@ -105,7 +105,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         set({ ...initialState, isLoading: false });
         return false;
       }
-    } catch (error) {
+    } catch {
       set({ ...initialState, isLoading: false });
       return false;
     }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList, RefreshControl, View, Text } from 'react-native';
+import { FlatList, RefreshControl } from 'react-native';
 import { Order } from '@/types';
 import { OrderCard } from './OrderCard';
 import { EmptyState } from '@/components/ui';

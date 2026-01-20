@@ -25,7 +25,7 @@ export function useOrders() {
   // Fetch orders on mount
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [fetchOrders]);
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
@@ -34,7 +34,7 @@ export function useOrders() {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [refreshOrders]);
 
   const handleRefresh = useCallback(async () => {
     await refreshOrders();
@@ -85,7 +85,7 @@ export function useOrder(orderId: number) {
     return () => {
       setSelectedOrder(null);
     };
-  }, [orderId]);
+  }, [orderId, getOrder, setSelectedOrder]);
 
   const handleStatusChange = useCallback(
     async (status: OrderStatus) => {

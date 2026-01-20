@@ -16,7 +16,7 @@ import { loginSchema, LoginFormData } from '@/utils';
 
 export default function LoginScreen() {
   const { login, isLoading, error, clearError } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword] = useState(false);
 
   const {
     control,

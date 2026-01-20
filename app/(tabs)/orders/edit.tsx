@@ -13,12 +13,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { Button, Input, Card, LoadingScreen } from '@/components/ui'
 import { ordersApi } from '@/services/api'
 import { UpdateOrderPayload, Order, OrderStatus } from '@/types'
 import { useOrdersStore } from '@/stores'
-import { ORDER_STATUS } from '@/constants'
 
 // Simple haptic feedback using Vibration API
 const hapticFeedback = {
@@ -59,9 +58,7 @@ export default function EditOrderScreen() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
   const orderId = parseInt(id, 10)
-  const queryClient = useQueryClient()
   const refreshOrders = useOrdersStore((state) => state.refreshOrders)
-  const getOrder = useOrdersStore((state) => state.getOrder)
   const setSelectedOrder = useOrdersStore((state) => state.setSelectedOrder)
 
   const [order, setOrder] = useState<Order | null>(null)

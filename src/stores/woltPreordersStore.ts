@@ -51,7 +51,6 @@ export const useWoltPreordersStore = create<WoltPreordersStore>((set, get) => ({
         isLoading: false,
       })
     } catch (error: unknown) {
-      console.log('Wolt Preorders API Error:', error)
       const err = error as { message?: string; status?: number }
       set({ isLoading: false, error: err.message ?? 'Failed to fetch preorders' })
     }

@@ -47,14 +47,12 @@ export const useOrdersStore = create<OrdersStore>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const response = await ordersApi.getOrders()
-      console.log('API Response:', JSON.stringify(response, null, 2))
       set({
         orders: response?.orders ?? [],
         isLoading: false,
         lastSynced: new Date(),
       })
     } catch (error: unknown) {
-      console.log('API Error:', error)
       const err = error as { message?: string; status?: number }
       set({ isLoading: false, error: err.message ?? 'Failed to fetch orders' })
     }
