@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { View, Text, Pressable, Platform, Linking, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 
