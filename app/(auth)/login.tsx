@@ -6,6 +6,7 @@ import {
   Platform,
   ScrollView,
   Alert,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
@@ -13,6 +14,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Input } from '@/components/ui';
 import { useAuth } from '@/hooks';
 import { loginSchema, LoginFormData } from '@/utils';
+
+const logo = require('../../assets/icon.png');
 
 export default function LoginScreen() {
   const { login, isLoading, error, clearError } = useAuth();
@@ -51,8 +54,12 @@ export default function LoginScreen() {
           <View className="flex-1 justify-center px-6">
             {/* Logo / Header */}
             <View className="mb-12 items-center">
-              <Text className="text-4xl font-bold text-white">BSM</Text>
-              <Text className="mt-2 text-lg text-gray-400">
+              <Image
+                source={logo}
+                style={{ width: 120, height: 120, borderRadius: 24 }}
+                resizeMode="contain"
+              />
+              <Text className="mt-4 text-lg text-gray-400">
                 Shipping Manager
               </Text>
             </View>

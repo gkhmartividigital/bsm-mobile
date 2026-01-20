@@ -1,6 +1,7 @@
 import React from 'react'
 import { Tabs } from 'expo-router'
 import { View, Text, Image } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 // Wolt icon image
 const woltIcon = require('../../assets/icons/wolt-icon.png')
@@ -39,6 +40,9 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
 }
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets()
+  const tabBarHeight = 70 + insets.bottom
+
   return (
     <Tabs
       screenOptions={{
@@ -49,8 +53,8 @@ export default function TabsLayout() {
           borderTopWidth: 1,
           borderTopColor: '#e5e7eb',
           paddingTop: 8,
-          paddingBottom: 8,
-          height: 70,
+          paddingBottom: 8 + insets.bottom,
+          height: tabBarHeight,
         },
         tabBarLabelStyle: {
           fontSize: 12,
