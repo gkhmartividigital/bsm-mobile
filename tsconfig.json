@@ -13,7 +13,7 @@
       "@/utils/*": ["src/utils/*"],
       "@/constants/*": ["src/constants/*"]
     },
-    "types": ["nativewind/types", "node"]
+    "types": ["nativewind/types", "node", "jest"]
   },
   "include": [
     "**/*.ts",
