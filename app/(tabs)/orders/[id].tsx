@@ -69,7 +69,8 @@ export default function OrderDetailScreen() {
   const isWolt = order.shippingProvider === 'wolt'
   const hasTimeSlot = order.scheduleType === 'scheduled' && order.timeSlot
   const canSendToWolt = isWolt && order.status === 'READY' && !order.woltOrderId
-  const canMarkDelivered = isWolt && order.woltOrderId && order.status !== 'DELIVERED'
+  // Allow marking any order as delivered (not just Wolt orders)
+  const canMarkDelivered = order.status !== 'DELIVERED'
 
   const handleStatusChange = async (status: keyof typeof ORDER_STATUS) => {
     const success = await updateStatus(status)
@@ -110,7 +111,11 @@ export default function OrderDetailScreen() {
         {
           text: 'Confirm',
           onPress: async () => {
-            const success = await markDelivered()
+            // Use markDelivered for Wolt orders (triggers Wolt webhook)
+            // Use updateStatus for non-Wolt orders
+            const success = isWolt && order.woltOrderId
+              ? await markDelivered()
+              : await updateStatus('DELIVERED')
             if (success) {
               Alert.alert('Success', 'Order marked as delivered')
             } else {
