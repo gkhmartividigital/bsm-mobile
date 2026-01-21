@@ -90,13 +90,21 @@ export default function OrderDetailScreen() {
   }
 
   const handleSendToWolt = async () => {
+    const orderDetails = [
+      `Order: #${order.externalId || order.id}`,
+      `Customer: ${order.customerName}`,
+      `Address: ${order.customerAddress}`,
+      `Product: ${order.productName} x${order.quantity}`,
+    ].join('\n')
+
     Alert.alert(
       'Send to Wolt',
-      'Are you sure you want to send this order to Wolt?',
+      `This will send the order to Wolt courier service.\n\n${orderDetails}\n\nAre you sure?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Send',
+          text: 'Send to Wolt',
+          style: 'destructive',
           onPress: async () => {
             const success = await sendToWolt()
             if (success) {
@@ -111,9 +119,16 @@ export default function OrderDetailScreen() {
   }
 
   const handleSendToTrackings = async () => {
+    const orderDetails = [
+      `Order: #${order.externalId || order.id}`,
+      `Customer: ${order.customerName}`,
+      `Address: ${order.customerAddress}`,
+      `Product: ${order.productName} x${order.quantity}`,
+    ].join('\n')
+
     Alert.alert(
       'Send to Trackings.ge',
-      'Select sender:',
+      `This will send the order to Trackings.ge courier.\n\n${orderDetails}\n\nSelect sender:`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
