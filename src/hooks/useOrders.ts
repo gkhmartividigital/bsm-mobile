@@ -72,6 +72,7 @@ export function useOrder(orderId: number) {
     updateOrderStatus,
     updateOrder,
     sendToWolt,
+    sendToTrackings,
     markDelivered,
     setSelectedOrder,
     clearError,
@@ -98,6 +99,10 @@ export function useOrder(orderId: number) {
     return sendToWolt(orderId);
   }, [orderId, sendToWolt]);
 
+  const handleSendToTrackings = useCallback(async (senderKey?: 'maka' | 'nato') => {
+    return sendToTrackings(orderId, senderKey);
+  }, [orderId, sendToTrackings]);
+
   const handleMarkDelivered = useCallback(async () => {
     return markDelivered(orderId);
   }, [orderId, markDelivered]);
@@ -109,6 +114,7 @@ export function useOrder(orderId: number) {
     updateStatus: handleStatusChange,
     update: (payload: Parameters<typeof updateOrder>[1]) => updateOrder(orderId, payload),
     sendToWolt: handleSendToWolt,
+    sendToTrackings: handleSendToTrackings,
     markDelivered: handleMarkDelivered,
     clearError,
   };

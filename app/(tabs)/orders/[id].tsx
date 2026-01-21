@@ -38,6 +38,7 @@ export default function OrderDetailScreen() {
     error,
     updateStatus,
     sendToWolt,
+    sendToTrackings,
     markDelivered,
   } = useOrder(orderId)
 
@@ -67,8 +68,15 @@ export default function OrderDetailScreen() {
   }
 
   const isWolt = order.shippingProvider === 'wolt'
+  const isTrackings = order.shippingProvider === 'trackings_ge' || !order.shippingProvider
   const hasTimeSlot = order.scheduleType === 'scheduled' && order.timeSlot
-  const canSendToWolt = isWolt && order.status === 'READY' && !order.woltOrderId
+  const hasWoltOrderId = Boolean(order.woltOrderId)
+  const hasTrackingCode = Boolean(order.trackingCode)
+  const hasCoordinates = Boolean(order.lat && order.lon)
+  // Backend requires: wolt provider + coordinates + no existing woltOrderId
+  const canSendToWolt = isWolt && hasCoordinates && !hasWoltOrderId
+  // Trackings.ge: no existing trackingCode
+  const canSendToTrackings = isTrackings && !hasTrackingCode
   // Allow marking any order as delivered (not just Wolt orders)
   const canMarkDelivered = order.status !== 'DELIVERED'
 
@@ -95,6 +103,38 @@ export default function OrderDetailScreen() {
               Alert.alert('Success', 'Order sent to Wolt')
             } else {
               Alert.alert('Error', 'Failed to send to Wolt')
+            }
+          },
+        },
+      ]
+    )
+  }
+
+  const handleSendToTrackings = async () => {
+    Alert.alert(
+      'Send to Trackings.ge',
+      'Select sender:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Maka',
+          onPress: async () => {
+            const success = await sendToTrackings('maka')
+            if (success) {
+              Alert.alert('Success', 'Order sent to Trackings.ge')
+            } else {
+              Alert.alert('Error', 'Failed to send to Trackings.ge')
+            }
+          },
+        },
+        {
+          text: 'Nato',
+          onPress: async () => {
+            const success = await sendToTrackings('nato')
+            if (success) {
+              Alert.alert('Success', 'Order sent to Trackings.ge')
+            } else {
+              Alert.alert('Error', 'Failed to send to Trackings.ge')
             }
           },
         },
@@ -439,7 +479,7 @@ export default function OrderDetailScreen() {
               </View>
             </View>
 
-            {/* Wolt Actions */}
+            {/* Shipping Actions */}
             {canSendToWolt && (
               <Button
                 title="Send to Wolt"
@@ -448,6 +488,17 @@ export default function OrderDetailScreen() {
                 onPress={handleSendToWolt}
                 className="mb-2"
                 icon={<Ionicons name="send" size={18} color="#ffffff" />}
+              />
+            )}
+
+            {canSendToTrackings && (
+              <Button
+                title="Send to Trackings.ge"
+                variant="primary"
+                fullWidth
+                onPress={handleSendToTrackings}
+                className="mb-2"
+                icon={<Ionicons name="car" size={18} color="#ffffff" />}
               />
             )}
 

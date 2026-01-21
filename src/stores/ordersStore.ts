@@ -19,6 +19,7 @@ interface OrdersActions {
   updateOrderStatus: (id: number, status: OrderStatus) => Promise<boolean>;
   updateOrder: (id: number, payload: UpdateOrderPayload) => Promise<boolean>;
   sendToWolt: (id: number) => Promise<boolean>;
+  sendToTrackings: (id: number, senderKey?: 'maka' | 'nato') => Promise<boolean>;
   markDelivered: (id: number) => Promise<boolean>;
   syncFromFirestore: () => Promise<void>;
   syncCarrierStatus: () => Promise<void>;
@@ -135,6 +136,25 @@ export const useOrdersStore = create<OrdersStore>((set, get) => ({
       return result.success;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to send to Wolt';
+      set({ error: errorMessage });
+      return false;
+    }
+  },
+
+  sendToTrackings: async (id: number, senderKey: 'maka' | 'nato' = 'maka') => {
+    try {
+      const updatedOrder = await ordersApi.sendToTrackings(id, senderKey);
+      // Update local state
+      set(state => ({
+        orders: state.orders.map(order =>
+          order.id === id ? updatedOrder : order
+        ),
+        selectedOrder:
+          state.selectedOrder?.id === id ? updatedOrder : state.selectedOrder,
+      }));
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send to Trackings.ge';
       set({ error: errorMessage });
       return false;
     }

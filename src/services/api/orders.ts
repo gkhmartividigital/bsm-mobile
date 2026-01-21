@@ -64,6 +64,18 @@ export const ordersApi = {
     ),
 
   /**
+   * Send order to Trackings.ge
+   */
+  sendToTrackings: (id: number, senderKey: 'maka' | 'nato' = 'maka') =>
+    apiRequest<Order>(
+      apiClient.patch(`/api/orders/${id}`, {
+        status: 'READY',
+        sendToShipping: true,
+        senderKey,
+      })
+    ),
+
+  /**
    * Sync orders from Firestore
    */
   syncOrders: () => apiRequest<SyncResponse>(apiClient.post('/api/sync-improved')),
