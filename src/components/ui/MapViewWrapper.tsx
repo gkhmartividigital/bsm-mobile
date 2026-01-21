@@ -89,7 +89,6 @@ export function MapViewWrapper({
   height = 200,
 }: MapViewWrapperProps) {
   const [isLoading, setIsLoading] = useState(true)
-  const [hasLoadError, setHasLoadError] = useState(false)
 
   const openExternalMap = useCallback(() => {
     const scheme = Platform.select({
@@ -107,26 +106,12 @@ export function MapViewWrapper({
     setIsLoading(false)
   }
 
-
-  // Show fallback if there was an error loading the map
-  if (hasLoadError) {
-    return (
-      <MapFallback
-        latitude={latitude}
-        longitude={longitude}
-        title={title}
-        description={description}
-        height={height}
-        onPress={openExternalMap}
-      />
-    )
-  }
-
   // Lazy load MapView to prevent crashes when module isn't available
   let MapView: typeof import('react-native-maps').default | null = null
   let Marker: typeof import('react-native-maps').Marker | null = null
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const maps = require('react-native-maps')
     MapView = maps.default
     Marker = maps.Marker
