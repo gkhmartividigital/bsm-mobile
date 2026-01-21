@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import {
   View,
   Text,
   ScrollView,
   Alert,
   Linking,
-  Pressable,
+  ActivityIndicator,
 } from 'react-native'
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -28,6 +28,7 @@ import {
   formatEta,
 } from '@/utils'
 import { ORDER_STATUS } from '@/constants'
+import { WoltEstimateResponse } from '@/types'
 
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -43,9 +44,29 @@ export default function OrderDetailScreen() {
     sendToWolt,
     sendToTrackings,
     markDelivered,
+    getWoltEstimate,
+    refresh,
   } = useOrder(orderId)
 
   const [showLocationPicker, setShowLocationPicker] = useState(false)
+  const [estimate, setEstimate] = useState<WoltEstimateResponse | null>(null)
+  const [isLoadingEstimate, setIsLoadingEstimate] = useState(false)
+
+  // Must define all callbacks before early returns to maintain hook order
+  const handleGetEstimate = useCallback(async () => {
+    setIsLoadingEstimate(true)
+    setEstimate(null)
+    const result = await getWoltEstimate()
+    setIsLoadingEstimate(false)
+    if (result) {
+      setEstimate(result)
+      if (!result.available && result.error) {
+        Alert.alert('Not Available', result.error)
+      }
+    } else {
+      Alert.alert('Error', 'Failed to get delivery estimate')
+    }
+  }, [getWoltEstimate])
 
   if (isLoading || !order) {
     return <LoadingScreen message="Loading order..." />
@@ -201,9 +222,11 @@ export default function OrderDetailScreen() {
   }
 
   const handleLocationUpdate = async (lat: number, lon: number) => {
+    // Update only coordinates - address remains as customer typed it
     const success = await updateLocation(lat, lon)
     if (success) {
-      Alert.alert('Success', 'Location updated successfully')
+      await refresh()
+      Alert.alert('Success', 'Location updated')
     } else {
       Alert.alert('Error', 'Failed to update location')
     }
@@ -319,30 +342,20 @@ export default function OrderDetailScreen() {
             </View>
           </Card>
 
-          {/* Map View - Only for Wolt orders */}
-          {isWolt && (
+          {/* Map View - Only for Wolt orders with coordinates */}
+          {isWolt && hasCoordinates && (
             <Card variant="elevated" className="mb-4 overflow-hidden">
               <Text className="text-lg font-semibold text-gray-900 mb-3">
                 Location
               </Text>
-              {order.lat && order.lon ? (
-                <MapViewWrapper
-                  latitude={order.lat}
-                  longitude={order.lon}
-                  title={order.customerName}
-                  description={order.customerAddress}
-                  height={200}
-                  onPress={() => setShowLocationPicker(true)}
-                />
-              ) : (
-                <Pressable onPress={() => setShowLocationPicker(true)}>
-                  <View className="bg-gray-100 rounded-lg items-center justify-center py-8">
-                    <Ionicons name="location-outline" size={48} color="#9ca3af" />
-                    <Text className="text-gray-500 mt-2">No location set</Text>
-                    <Text className="text-gray-400 text-sm">Tap to set delivery location</Text>
-                  </View>
-                </Pressable>
-              )}
+              <MapViewWrapper
+                latitude={order.lat!}
+                longitude={order.lon!}
+                title={order.customerName}
+                description={order.customerAddress}
+                height={200}
+                onPress={() => setShowLocationPicker(true)}
+              />
             </Card>
           )}
 
@@ -378,15 +391,59 @@ export default function OrderDetailScreen() {
           {/* Wolt Info */}
           {isWolt && (
             <Card variant="elevated" className="mb-4 border-l-4 border-cyan-500">
-              <View className="flex-row items-center mb-3">
-                <View className="bg-cyan-100 rounded-full p-2 mr-3">
-                  <Ionicons name="bicycle" size={20} color="#06b6d4" />
+              <View className="flex-row items-center justify-between mb-3">
+                <View className="flex-row items-center">
+                  <View className="bg-cyan-100 rounded-full p-2 mr-3">
+                    <Ionicons name="bicycle" size={20} color="#06b6d4" />
+                  </View>
+                  <Text className="text-lg font-semibold text-cyan-700">
+                    Wolt Delivery
+                  </Text>
                 </View>
-                <Text className="text-lg font-semibold text-cyan-700">
-                  Wolt Delivery
-                </Text>
+                {!hasWoltOrderId && (
+                  <Button
+                    title={isLoadingEstimate ? '' : 'Get Estimate'}
+                    variant="outline"
+                    size="sm"
+                    onPress={handleGetEstimate}
+                    disabled={isLoadingEstimate}
+                    icon={isLoadingEstimate ? (
+                      <ActivityIndicator size="small" color="#06b6d4" />
+                    ) : (
+                      <Ionicons name="calculator-outline" size={16} color="#06b6d4" />
+                    )}
+                  />
+                )}
               </View>
               <View className="gap-2">
+                {/* Show estimate if available and no woltOrderId yet */}
+                {!hasWoltOrderId && estimate?.available && (
+                  <>
+                    <View className="flex-row justify-between items-center py-2 border-b border-gray-100">
+                      <Text className="text-gray-500">Estimated Price</Text>
+                      <Text className="font-semibold text-cyan-700">
+                        {formatPrice(estimate.price)} {estimate.currency}
+                      </Text>
+                    </View>
+                    {estimate.eta_minutes && (
+                      <View className="flex-row justify-between items-center py-2 border-b border-gray-100">
+                        <Text className="text-gray-500">Estimated ETA</Text>
+                        <Text className="font-medium text-cyan-700">
+                          {estimate.eta_minutes} min
+                        </Text>
+                      </View>
+                    )}
+                    {estimate.formatted_address && (
+                      <View className="py-2 border-b border-gray-100">
+                        <Text className="text-gray-500 text-xs">Delivery Address</Text>
+                        <Text className="text-gray-900 text-sm">
+                          {estimate.formatted_address}
+                        </Text>
+                      </View>
+                    )}
+                  </>
+                )}
+                {/* Show actual Wolt data if order was sent */}
                 {order.woltPrice && (
                   <View className="flex-row justify-between items-center py-2 border-b border-gray-100">
                     <Text className="text-gray-500">Price</Text>

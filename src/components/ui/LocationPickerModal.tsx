@@ -14,7 +14,7 @@ import { Button } from './Button'
 interface LocationPickerModalProps {
   visible: boolean
   onClose: () => void
-  onSave: (lat: number, lon: number) => void
+  onSave: (lat: number, lon: number) => void | Promise<void>
   initialLat?: number | null
   initialLon?: number | null
   title?: string
@@ -41,6 +41,7 @@ export function LocationPickerModal({
     initialLon ?? DEFAULT_LOCATION.lon
   )
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [mapReady, setMapReady] = useState(false)
 
   // Update selected location when initial values change
@@ -76,9 +77,14 @@ export function LocationPickerModal({
     }
   }, [])
 
-  const handleSave = useCallback(() => {
-    onSave(selectedLat, selectedLon)
-    onClose()
+  const handleSave = useCallback(async () => {
+    setIsSaving(true)
+    try {
+      await onSave(selectedLat, selectedLon)
+      onClose()
+    } finally {
+      setIsSaving(false)
+    }
   }, [selectedLat, selectedLon, onSave, onClose])
 
   const handleMapPress = useCallback((event: { nativeEvent: { coordinate: { latitude: number; longitude: number } } }) => {
@@ -194,12 +200,14 @@ export function LocationPickerModal({
             style={{ marginBottom: 12 }}
           />
           <Button
-            title="Save Location"
+            title={isSaving ? 'Saving...' : 'Save Location'}
             variant="primary"
             fullWidth
             onPress={handleSave}
+            loading={isSaving}
+            disabled={isSaving}
             style={{ backgroundColor: '#0284c7' }}
-            icon={<Ionicons name="checkmark" size={18} color="#ffffff" />}
+            icon={!isSaving ? <Ionicons name="checkmark" size={18} color="#ffffff" /> : undefined}
           />
         </View>
       </View>

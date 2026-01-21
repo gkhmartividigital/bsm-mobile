@@ -107,3 +107,32 @@ export interface OrderStatsResponse {
   delivered: number;
   total: number;
 }
+
+/**
+ * Wolt estimate request
+ */
+export interface WoltEstimateRequest {
+  address: string;
+  city?: string;
+  lat?: number;
+  lon?: number;
+  customerName?: string;
+  orderId?: string;
+}
+
+/**
+ * Wolt estimate response
+ */
+export interface WoltEstimateResponse {
+  available: boolean;
+  price?: number;
+  currency?: string;
+  eta_minutes?: number;
+  provider: 'wolt';
+  formatted_address?: string;
+  corrected_address?: string;
+  coordinates?: { lat: number; lon: number };
+  is_binding?: boolean;
+  error?: string;
+  error_code?: string;
+}

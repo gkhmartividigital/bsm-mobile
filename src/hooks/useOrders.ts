@@ -1,6 +1,8 @@
 import { useEffect, useCallback } from 'react';
 import { useOrdersStore } from '@/stores';
 import { OrderStatus } from '@/constants';
+import { ordersApi } from '@/services/api';
+import { WoltEstimateResponse } from '@/types';
 
 /**
  * Hook to fetch and manage orders
@@ -112,6 +114,26 @@ export function useOrder(orderId: number) {
     return updateLocation(orderId, lat, lon);
   }, [orderId, updateLocation]);
 
+  const handleGetWoltEstimate = useCallback(async (): Promise<WoltEstimateResponse | null> => {
+    if (!selectedOrder) return null;
+    try {
+      return await ordersApi.getWoltEstimate({
+        address: selectedOrder.customerAddress,
+        city: selectedOrder.city || 'თბილისი',
+        lat: selectedOrder.lat ?? undefined,
+        lon: selectedOrder.lon ?? undefined,
+        customerName: selectedOrder.customerName,
+        orderId: String(selectedOrder.id),
+      });
+    } catch {
+      return null;
+    }
+  }, [selectedOrder]);
+
+  const refresh = useCallback(async () => {
+    await getOrder(orderId);
+  }, [orderId, getOrder]);
+
   return {
     order: selectedOrder,
     isLoading,
@@ -122,6 +144,8 @@ export function useOrder(orderId: number) {
     sendToWolt: handleSendToWolt,
     sendToTrackings: handleSendToTrackings,
     markDelivered: handleMarkDelivered,
+    getWoltEstimate: handleGetWoltEstimate,
+    refresh,
     clearError,
   };
 }
