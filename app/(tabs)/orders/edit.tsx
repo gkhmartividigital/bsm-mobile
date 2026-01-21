@@ -555,7 +555,7 @@ export default function EditOrderScreen() {
                   <View className="bg-gray-100 rounded-lg items-center justify-center py-6">
                     <Ionicons name="location-outline" size={32} color="#9ca3af" />
                     <Text className="text-gray-500 mt-2">No location set</Text>
-                    <Text className="text-gray-400 text-xs">Tap "Add" to set delivery coordinates</Text>
+                    <Text className="text-gray-400 text-xs">Tap Add to set delivery coordinates</Text>
                   </View>
                 )}
               </Card>
