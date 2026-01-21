@@ -68,15 +68,16 @@ export default function OrderDetailScreen() {
   }
 
   const isWolt = order.shippingProvider === 'wolt'
-  const isTrackings = order.shippingProvider === 'trackings_ge' || !order.shippingProvider
+  const isTrackings = !isWolt // Any non-Wolt order can be sent to Trackings.ge
   const hasTimeSlot = order.scheduleType === 'scheduled' && order.timeSlot
   const hasWoltOrderId = Boolean(order.woltOrderId)
   const hasTrackingCode = Boolean(order.trackingCode)
   const hasCoordinates = Boolean(order.lat && order.lon)
-  // Backend requires: wolt provider + coordinates + no existing woltOrderId
-  const canSendToWolt = isWolt && hasCoordinates && !hasWoltOrderId
-  // Trackings.ge: no existing trackingCode
-  const canSendToTrackings = isTrackings && !hasTrackingCode
+  const isReady = order.status === 'READY'
+  // Backend requires: wolt provider + coordinates + no existing woltOrderId + status READY
+  const canSendToWolt = isWolt && hasCoordinates && !hasWoltOrderId && isReady
+  // Trackings.ge: no existing trackingCode + status READY
+  const canSendToTrackings = isTrackings && !hasTrackingCode && isReady
   // Allow marking any order as delivered (not just Wolt orders)
   const canMarkDelivered = order.status !== 'DELIVERED'
 
@@ -496,25 +497,29 @@ export default function OrderDetailScreen() {
 
             {/* Shipping Actions */}
             {canSendToWolt && (
-              <Button
-                title="Send to Wolt"
-                variant="primary"
-                fullWidth
-                onPress={handleSendToWolt}
-                className="mb-2"
-                icon={<Ionicons name="send" size={18} color="#ffffff" />}
-              />
+              <View className="mb-2">
+                <Button
+                  title="Send to Wolt"
+                  variant="primary"
+                  fullWidth
+                  onPress={handleSendToWolt}
+                  style={{ backgroundColor: '#0284c7' }}
+                  icon={<Ionicons name="send" size={18} color="#ffffff" />}
+                />
+              </View>
             )}
 
             {canSendToTrackings && (
-              <Button
-                title="Send to Trackings.ge"
-                variant="primary"
-                fullWidth
-                onPress={handleSendToTrackings}
-                className="mb-2"
-                icon={<Ionicons name="car" size={18} color="#ffffff" />}
-              />
+              <View className="mb-2">
+                <Button
+                  title="Send to Trackings.ge"
+                  variant="primary"
+                  fullWidth
+                  onPress={handleSendToTrackings}
+                  style={{ backgroundColor: '#0284c7' }}
+                  icon={<Ionicons name="car" size={18} color="#ffffff" />}
+                />
+              </View>
             )}
 
             {canMarkDelivered && (
