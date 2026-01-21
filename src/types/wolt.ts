@@ -1,12 +1,19 @@
 /**
  * Wolt estimate request
  */
-export interface WoltEstimatePayload {
+export interface WoltEstimateRequest {
   address: string;
   city?: string;
   lat?: number;
   lon?: number;
+  customerName?: string;
+  orderId?: string;
 }
+
+/**
+ * Wolt estimate payload (alias for request)
+ */
+export type WoltEstimatePayload = WoltEstimateRequest;
 
 /**
  * Wolt estimate response
@@ -16,12 +23,16 @@ export interface WoltEstimateResponse {
   price?: number;
   currency?: string;
   eta_minutes?: number;
+  provider?: 'wolt';
+  formatted_address?: string;
+  corrected_address?: string;
   is_binding?: boolean;
   coordinates?: {
     lat: number;
     lon: number;
   };
   error?: string;
+  error_code?: string;
 }
 
 /**
