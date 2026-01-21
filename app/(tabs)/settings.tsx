@@ -113,7 +113,7 @@ export default function SettingsScreen() {
         <Card variant="elevated" className="mb-4">
           <SectionHeader icon="🔄" title="Data Sync" />
           <Text className="mb-4 text-gray-500">
-            Auto-refresh interval: 30 seconds
+            Auto-refresh interval: 5 minutes
           </Text>
           <Button
             title="Force Sync Now"
