@@ -25,11 +25,11 @@ export function useWoltPreorders() {
     fetchPreorders()
   }, [fetchPreorders])
 
-  // Auto-refresh every 30 seconds
+  // Auto-refresh every 5 minutes
   useEffect(() => {
     const interval = setInterval(() => {
       refreshPreorders()
-    }, 30000)
+    }, 300000)
 
     return () => clearInterval(interval)
   }, [refreshPreorders])
