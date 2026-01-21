@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   View,
   Text,
   ScrollView,
   Alert,
   Linking,
+  Pressable,
 } from 'react-native'
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -17,6 +18,7 @@ import {
   ProviderBadge,
   LoadingScreen,
   MapViewWrapper,
+  LocationPickerModal,
 } from '@/components/ui'
 import {
   formatPhone,
@@ -37,10 +39,13 @@ export default function OrderDetailScreen() {
     isLoading,
     error,
     updateStatus,
+    updateLocation,
     sendToWolt,
     sendToTrackings,
     markDelivered,
   } = useOrder(orderId)
+
+  const [showLocationPicker, setShowLocationPicker] = useState(false)
 
   if (isLoading || !order) {
     return <LoadingScreen message="Loading order..." />
@@ -195,6 +200,15 @@ export default function OrderDetailScreen() {
     }
   }
 
+  const handleLocationUpdate = async (lat: number, lon: number) => {
+    const success = await updateLocation(lat, lon)
+    if (success) {
+      Alert.alert('Success', 'Location updated successfully')
+    } else {
+      Alert.alert('Error', 'Failed to update location')
+    }
+  }
+
   return (
     <>
       <Stack.Screen
@@ -305,19 +319,30 @@ export default function OrderDetailScreen() {
             </View>
           </Card>
 
-          {/* Map View */}
-          {order.lat && order.lon && (
+          {/* Map View - Only for Wolt orders */}
+          {isWolt && (
             <Card variant="elevated" className="mb-4 overflow-hidden">
-              <Text className="mb-3 text-lg font-semibold text-gray-900">
+              <Text className="text-lg font-semibold text-gray-900 mb-3">
                 Location
               </Text>
-              <MapViewWrapper
-                latitude={order.lat}
-                longitude={order.lon}
-                title={order.customerName}
-                description={order.customerAddress}
-                height={200}
-              />
+              {order.lat && order.lon ? (
+                <MapViewWrapper
+                  latitude={order.lat}
+                  longitude={order.lon}
+                  title={order.customerName}
+                  description={order.customerAddress}
+                  height={200}
+                  onPress={() => setShowLocationPicker(true)}
+                />
+              ) : (
+                <Pressable onPress={() => setShowLocationPicker(true)}>
+                  <View className="bg-gray-100 rounded-lg items-center justify-center py-8">
+                    <Ionicons name="location-outline" size={48} color="#9ca3af" />
+                    <Text className="text-gray-500 mt-2">No location set</Text>
+                    <Text className="text-gray-400 text-sm">Tap to set delivery location</Text>
+                  </View>
+                </Pressable>
+              )}
             </Card>
           )}
 
@@ -534,6 +559,15 @@ export default function OrderDetailScreen() {
           </Card>
         </ScrollView>
       </SafeAreaView>
+
+      <LocationPickerModal
+        visible={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onSave={handleLocationUpdate}
+        initialLat={order.lat}
+        initialLon={order.lon}
+        title="Edit Delivery Location"
+      />
     </>
   )
 }

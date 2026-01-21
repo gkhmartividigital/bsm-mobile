@@ -8,6 +8,7 @@ interface MapViewWrapperProps {
   title?: string
   description?: string
   height?: number
+  onPress?: () => void
 }
 
 interface ErrorBoundaryState {
@@ -87,6 +88,7 @@ export function MapViewWrapper({
   title,
   description,
   height = 200,
+  onPress,
 }: MapViewWrapperProps) {
   const [isLoading, setIsLoading] = useState(true)
 
@@ -101,6 +103,8 @@ export function MapViewWrapper({
     })
     Linking.openURL(url || `https://www.google.com/maps?q=${latitude},${longitude}`)
   }, [latitude, longitude])
+
+  const handlePress = onPress || openExternalMap
 
   const handleMapReady = () => {
     setIsLoading(false)
@@ -124,7 +128,7 @@ export function MapViewWrapper({
         title={title}
         description={description}
         height={height}
-        onPress={openExternalMap}
+        onPress={handlePress}
       />
     )
   }
@@ -136,13 +140,13 @@ export function MapViewWrapper({
       title={title}
       description={description}
       height={height}
-      onPress={openExternalMap}
+      onPress={handlePress}
     />
   )
 
   return (
     <MapErrorBoundary fallback={fallbackComponent}>
-      <Pressable onPress={openExternalMap} className="rounded-lg overflow-hidden">
+      <Pressable onPress={handlePress} className="rounded-lg overflow-hidden">
         <View style={{ height, width: '100%' }}>
           {isLoading && (
             <View
@@ -175,11 +179,6 @@ export function MapViewWrapper({
               />
             </MapView>
           )}
-        </View>
-        <View className="absolute bottom-2 right-2 bg-white px-3 py-1.5 rounded-full shadow">
-          <Text className="text-sm font-medium text-primary-600">
-            Tap to navigate
-          </Text>
         </View>
       </Pressable>
     </MapErrorBoundary>

@@ -18,6 +18,7 @@ interface OrdersActions {
   getOrder: (id: number) => Promise<Order | null>;
   updateOrderStatus: (id: number, status: OrderStatus) => Promise<boolean>;
   updateOrder: (id: number, payload: UpdateOrderPayload) => Promise<boolean>;
+  updateLocation: (id: number, lat: number, lon: number) => Promise<boolean>;
   sendToWolt: (id: number) => Promise<boolean>;
   sendToTrackings: (id: number, senderKey?: 'maka' | 'nato') => Promise<boolean>;
   markDelivered: (id: number) => Promise<boolean>;
@@ -121,6 +122,25 @@ export const useOrdersStore = create<OrdersStore>((set, get) => ({
       return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update order';
+      set({ error: errorMessage });
+      return false;
+    }
+  },
+
+  updateLocation: async (id: number, lat: number, lon: number) => {
+    try {
+      const updatedOrder = await ordersApi.updateLocation(id, lat, lon);
+      // Update local state
+      set(state => ({
+        orders: state.orders.map(order =>
+          order.id === id ? updatedOrder : order
+        ),
+        selectedOrder:
+          state.selectedOrder?.id === id ? updatedOrder : state.selectedOrder,
+      }));
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update location';
       set({ error: errorMessage });
       return false;
     }

@@ -87,4 +87,16 @@ export const ordersApi = {
     apiRequest<{ success: boolean; updated: number }>(
       apiClient.post('/api/sync-carrier-status')
     ),
+
+  /**
+   * Update order location (coordinates)
+   * Uses dedicated endpoint that updates both PostgreSQL and Firestore
+   */
+  updateLocation: async (id: number, lat: number, lon: number): Promise<Order> => {
+    await apiRequest<{ success: boolean }>(
+      apiClient.post(`/api/orders/${id}/update-location`, { lat, lon })
+    )
+    // Fetch the updated order
+    return ordersApi.getOrder(id)
+  },
 };

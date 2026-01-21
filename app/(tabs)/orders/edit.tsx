@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { useMutation } from '@tanstack/react-query'
-import { Button, Input, Card, LoadingScreen } from '@/components/ui'
+import { Button, Input, Card, LoadingScreen, LocationPickerModal } from '@/components/ui'
 import { ordersApi } from '@/services/api'
 import { UpdateOrderPayload, Order, OrderStatus } from '@/types'
 import { useOrdersStore } from '@/stores'
@@ -76,6 +76,9 @@ export default function EditOrderScreen() {
   })
   const [errors, setErrors] = useState<FormErrors>({})
   const [showStatusPicker, setShowStatusPicker] = useState(false)
+  const [showLocationPicker, setShowLocationPicker] = useState(false)
+  const [locationLat, setLocationLat] = useState<number | null>(null)
+  const [locationLon, setLocationLon] = useState<number | null>(null)
 
   // Refs for input navigation
   const phoneRef = useRef<TextInput>(null)
@@ -113,6 +116,8 @@ export default function EditOrderScreen() {
           notes: fetchedOrder.notes || '',
           status: fetchedOrder.status || 'PENDING',
         })
+        setLocationLat(fetchedOrder.lat ?? null)
+        setLocationLon(fetchedOrder.lon ?? null)
         setIsLoadingOrder(false)
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to load order'
@@ -126,7 +131,20 @@ export default function EditOrderScreen() {
 
   // Update order mutation
   const updateOrderMutation = useMutation({
-    mutationFn: (payload: UpdateOrderPayload) => ordersApi.updateOrder(orderId, payload),
+    mutationFn: async (payload: UpdateOrderPayload & { _locationLat?: number | null; _locationLon?: number | null }) => {
+      const { _locationLat, _locationLon, ...updatePayload } = payload
+
+      // First update the order (without location - backend ignores lat/lon in PATCH)
+      const updatedOrder = await ordersApi.updateOrder(orderId, updatePayload)
+
+      // Then update location separately if coordinates are provided
+      const locationChanged = _locationLat !== order?.lat || _locationLon !== order?.lon
+      if (locationChanged && _locationLat != null && _locationLon != null) {
+        return await ordersApi.updateLocation(orderId, _locationLat, _locationLon)
+      }
+
+      return updatedOrder
+    },
     onSuccess: async (updatedOrder) => {
       hapticFeedback.success()
       // Update local state
@@ -208,7 +226,7 @@ export default function EditOrderScreen() {
       return
     }
 
-    const payload: UpdateOrderPayload = {
+    const payload = {
       customerName: formData.customerName.trim(),
       customerPhone: formData.customerPhone.trim(),
       customerAddress: formData.customerAddress.trim(),
@@ -217,10 +235,13 @@ export default function EditOrderScreen() {
       quantity: parseInt(formData.quantity, 10),
       notes: formData.notes.trim() || undefined,
       status: formData.status,
+      // Pass location separately (backend ignores lat/lon in PATCH)
+      _locationLat: locationLat,
+      _locationLon: locationLon,
     }
 
     updateOrderMutation.mutate(payload)
-  }, [formData, validateForm, updateOrderMutation])
+  }, [formData, locationLat, locationLon, validateForm, updateOrderMutation])
 
   // Reset form to original values
   const handleReset = useCallback(() => {
@@ -236,9 +257,17 @@ export default function EditOrderScreen() {
         notes: order.notes || '',
         status: order.status || 'PENDING',
       })
+      setLocationLat(order.lat ?? null)
+      setLocationLon(order.lon ?? null)
     }
     setErrors({})
   }, [order])
+
+  // Handle location update from picker
+  const handleLocationSave = useCallback((lat: number, lon: number) => {
+    setLocationLat(lat)
+    setLocationLon(lon)
+  }, [])
 
   // Loading state
   if (isLoadingOrder) {
@@ -489,6 +518,49 @@ export default function EditOrderScreen() {
               </View>
             </Card>
 
+            {/* Delivery Location - Only for Wolt orders */}
+            {order.shippingProvider === 'wolt' && (
+              <Card variant="elevated" className="mb-4">
+                <View className="flex-row items-center justify-between mb-4">
+                  <View className="flex-row items-center">
+                    <View className="bg-green-100 rounded-full p-2 mr-3">
+                      <Ionicons name="location" size={20} color="#10b981" />
+                    </View>
+                    <Text className="text-lg font-semibold text-gray-900">
+                      Delivery Location
+                    </Text>
+                  </View>
+                  <Button
+                    title={locationLat && locationLon ? 'Edit' : 'Add'}
+                    variant="outline"
+                    size="sm"
+                    onPress={() => setShowLocationPicker(true)}
+                    icon={<Ionicons name={locationLat && locationLon ? 'create-outline' : 'add'} size={16} color="#4f46e5" />}
+                  />
+                </View>
+
+                {locationLat && locationLon ? (
+                  <View className="bg-gray-50 p-3 rounded-lg">
+                    <View className="flex-row items-center">
+                      <Ionicons name="pin" size={16} color="#6b7280" />
+                      <Text className="text-gray-700 ml-2">
+                        Coordinates set
+                      </Text>
+                    </View>
+                    <Text className="text-gray-500 text-sm font-mono mt-1">
+                      {locationLat.toFixed(6)}, {locationLon.toFixed(6)}
+                    </Text>
+                  </View>
+                ) : (
+                  <View className="bg-gray-100 rounded-lg items-center justify-center py-6">
+                    <Ionicons name="location-outline" size={32} color="#9ca3af" />
+                    <Text className="text-gray-500 mt-2">No location set</Text>
+                    <Text className="text-gray-400 text-xs">Tap "Add" to set delivery coordinates</Text>
+                  </View>
+                )}
+              </Card>
+            )}
+
             {/* Additional Notes */}
             <Card variant="elevated" className="mb-4">
               <View className="flex-row items-center mb-4">
@@ -550,6 +622,17 @@ export default function EditOrderScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
+
+      {order.shippingProvider === 'wolt' && (
+        <LocationPickerModal
+          visible={showLocationPicker}
+          onClose={() => setShowLocationPicker(false)}
+          onSave={handleLocationSave}
+          initialLat={locationLat}
+          initialLon={locationLon}
+          title="Set Delivery Location"
+        />
+      )}
     </>
   )
 }

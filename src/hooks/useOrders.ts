@@ -71,6 +71,7 @@ export function useOrder(orderId: number) {
     getOrder,
     updateOrderStatus,
     updateOrder,
+    updateLocation,
     sendToWolt,
     sendToTrackings,
     markDelivered,
@@ -107,12 +108,17 @@ export function useOrder(orderId: number) {
     return markDelivered(orderId);
   }, [orderId, markDelivered]);
 
+  const handleUpdateLocation = useCallback(async (lat: number, lon: number) => {
+    return updateLocation(orderId, lat, lon);
+  }, [orderId, updateLocation]);
+
   return {
     order: selectedOrder,
     isLoading,
     error,
     updateStatus: handleStatusChange,
     update: (payload: Parameters<typeof updateOrder>[1]) => updateOrder(orderId, payload),
+    updateLocation: handleUpdateLocation,
     sendToWolt: handleSendToWolt,
     sendToTrackings: handleSendToTrackings,
     markDelivered: handleMarkDelivered,

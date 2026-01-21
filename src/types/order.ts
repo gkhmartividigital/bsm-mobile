@@ -79,6 +79,8 @@ export interface UpdateOrderPayload {
   notes?: string;
   sendToShipping?: boolean;
   senderKey?: string;
+  lat?: number | null;
+  lon?: number | null;
 }
 
 /**
