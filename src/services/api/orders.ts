@@ -6,6 +6,8 @@ import {
   CreateOrderPayload,
   UpdateOrderPayload,
   SyncResponse,
+  WoltEstimateRequest,
+  WoltEstimateResponse,
 } from '@/types';
 
 /**
@@ -99,4 +101,12 @@ export const ordersApi = {
     // Fetch the updated order
     return ordersApi.getOrder(id)
   },
+
+  /**
+   * Get Wolt delivery estimate (price and ETA)
+   */
+  getWoltEstimate: (request: WoltEstimateRequest) =>
+    apiRequest<WoltEstimateResponse>(
+      apiClient.post('/api/wolt/estimate', request)
+    ),
 };
